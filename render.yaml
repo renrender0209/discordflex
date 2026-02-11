@@ -1,6 +1,8 @@
-
+# DiscordFlex - Render.com デプロイ設定（修正版）
+# Node.js v16を使用してOpenSSLエラーを回避
 
 services:
+  # バックエンドサービス（Node.js + Socket.io）
   - type: web
     name: discordflex-backend
     runtime: node
@@ -14,19 +16,35 @@ services:
         value: production
       - key: PORT
         value: 10000
+      # Node.js 16を指定（OpenSSL 1.1.1互換）
+      - key: NODE_VERSION
+        value: 16.20.2
     healthCheckPath: /
     
+  # フロントエンドサービス（Vue.js）
   - type: web
     name: discordflex-frontend
     runtime: node
     env: node
     region: oregon
     plan: free
-    buildCommand: npm install && npm run build
-    startCommand: npx serve -s dist -l 10000
+    # OpenSSLエラー対策：レガシーOpenSSLプロバイダーを使用
+    buildCommand: |
+      export NODE_OPTIONS=--openssl-legacy-provider
+      npm install
+      npm run build
+    # serveパッケージをグローバルインストールしてから起動
+    startCommand: |
+      npm install -g serve
+      serve -s dist -l $PORT
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_OPTIONS
+        value: --openssl-legacy-provider
+      # Node.js 16を指定
+      - key: NODE_VERSION
+        value: 16.20.2
       - key: PUBLIC
         value: https://discordflex-backend.onrender.com
     healthCheckPath: /
