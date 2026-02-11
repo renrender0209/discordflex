@@ -1,0 +1,32 @@
+
+
+services:
+  - type: web
+    name: discordflex-backend
+    runtime: node
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    healthCheckPath: /
+    
+  - type: web
+    name: discordflex-frontend
+    runtime: node
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npx serve -s dist -l 10000
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PUBLIC
+        value: https://discordflex-backend.onrender.com
+    healthCheckPath: /
